@@ -8,7 +8,7 @@ var app = express();
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
 var cors = require('cors');
-app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
+app.use(cors({ optionsSuccessStatus: 200 }));  // some legacy browsers choke on 204
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
@@ -20,13 +20,34 @@ app.get("/", function (req, res) {
 
 
 // your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+app.get("/api/:date", (req, res) => {
+  let myDate = req.params.date;
+  console.log(myDate);
+  if (/\d\d\d\d-\d\d-\d\d/.test(myDate)) {
+    myDate = new Date(myDate);
+    res.json({ unix: myDate.valueOf(), utc: myDate.toUTCString() })
+  } else if (Number(myDate)) {
+    myDate = Number(myDate);
+    res.json({ unix: myDate, utc: new Date(myDate).toUTCString() })
+  }
+  else if (/^\d+\w/.test(myDate)) {
+    myDate = new Date(myDate);
+    res.json({ unix: myDate.valueOf(), utc: myDate.toUTCString() })
+  }
+
+  else {
+    res.json({ error: "Invalid Date" })
+  }
 });
+app.get("/api/", (req, res) => {
+  res.send({ unix: new Date().valueOf(), utc: new Date().toUTCString() })
+})
 
 
 
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+let port = process.env.PORT || 4000;
+var listener = app.listen(port, function () {
+  console.log('Your app is listening on port ' + port);
+  console.log(`\t\thttp://localhost:${port}/`)
 });
